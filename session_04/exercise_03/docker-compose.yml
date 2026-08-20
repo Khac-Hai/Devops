@@ -1,0 +1,26 @@
+services:
+  backend:
+    image: storex-backend:v3
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+    networks:
+      - storex-net
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:13
+    # Đã đóng cổng 5432 ra host để đảm bảo bảo mật
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+    networks:
+      - storex-net
+
+networks:
+  storex-net:
+    driver: bridge

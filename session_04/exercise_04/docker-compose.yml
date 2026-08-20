@@ -1,0 +1,18 @@
+services:
+  nginx_proxy:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - user_service
+      - product_service
+
+  user_service:
+    image: storex-user:latest
+    # Chạy trên port 8081 nội bộ trong mạng Docker
+
+  product_service:
+    image: storex-product:latest
+    # Chạy trên port 8082 nội bộ trong mạng Docker
