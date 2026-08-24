@@ -1,0 +1,62 @@
+package com.example.banking;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.util.HashMap;
+import java.util.Map;
+
+@SpringBootApplication
+@RestController
+public class BankingApplication {
+
+    private static final Logger log = LoggerFactory.getLogger(BankingApplication.class);
+    private final DataSource dataSource;
+
+    public BankingApplication(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    public static void main(String[] args) {
+        SpringApplication.run(BankingApplication.class, args);
+    }
+
+    @Bean
+    public CommandLineRunner testConnection() {
+        return args -> {
+            try (Connection conn = dataSource.getConnection()) {
+                log.info("=================================================");
+                log.info("HikariCP connected successfully to Database!");
+                log.info("Database Product Name : {}", conn.getMetaData().getDatabaseProductName());
+                log.info("Database URL          : {}", conn.getMetaData().getURL());
+                log.info("Database Name / Schema: {}", conn.getCatalog());
+                log.info("=================================================");
+            } catch (Exception e) {
+                log.error("Failed to connect to database: {}", e.getMessage(), e);
+            }
+        };
+    }
+
+    @GetMapping("/")
+    public Map<String, Object> index() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "UP");
+        response.put("service", "banking-app");
+        try (Connection conn = dataSource.getConnection()) {
+            response.put("database", conn.getCatalog());
+            response.put("database_product", conn.getMetaData().getDatabaseProductName());
+            response.put("database_status", "CONNECTED");
+        } catch (Exception e) {
+            response.put("database_status", "ERROR: " + e.getMessage());
+        }
+        return response;
+    }
+}
