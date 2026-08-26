@@ -1,0 +1,73 @@
+name: Payment Service CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  # Giai đoạn 1: Chạy Unit Test
+  test_job:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: session_07/exercise_03
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Run Unit Tests
+        run: ./gradlew test --no-daemon
+
+  # Giai đoạn 2: Build JAR (phụ thuộc vào test_job qua từ khóa needs)
+  build_job:
+    name: Build & Package JAR
+    needs: test_job
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: session_07/exercise_03
+
+    steps:
+      # Job Isolation: Runner mới hoàn toàn, bắt buộc phải checkout lại mã nguồn
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      # Job Isolation: Bắt buộc phải cài đặt lại JDK 21
+      - name: Setup Java JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build JAR Package
+        run: ./gradlew bootJar -x test --no-daemon
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: payment-service-artifact
+          path: session_07/exercise_03/build/libs/*.jar
+          retention-days: 3
