@@ -1,0 +1,36 @@
+name: Restaurant Service CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build Restaurant Service on Self-Hosted Runner
+    # Chỉ định chạy trên self-hosted runner có gắn nhãn quickbite-runner
+    runs-on: [self-hosted, quickbite-runner]
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew bootJar --no-daemon
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: restaurant-service-artifact
+          path: build/libs/*.jar
+          retention-days: 3

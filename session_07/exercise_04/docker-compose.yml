@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  quickbite-self-hosted-runner:
+    image: myoung34/github-runner:latest
+    container_name: quickbite-restaurant-runner
+    restart: unless-stopped
+    environment:
+      # URL của Repository GitHub
+      - REPO_URL=${REPO_URL:-https://github.com/Khac-Hai/Devops}
+      # Token đăng ký lấy từ: Settings > Actions > Runners > New runner
+      - RUNNER_TOKEN=${RUNNER_TOKEN}
+      # Tên định danh cho runner
+      - RUNNER_NAME=${RUNNER_NAME:-quickbite-restaurant-runner}
+      # Nhãn (Labels) dùng để định tuyến trong ci.yml: runs-on: [self-hosted, quickbite-runner]
+      - RUNNER_LABELS=${RUNNER_LABELS:-quickbite-runner,restaurant-service,linux,x64}
+      # Thư mục làm việc tạm thời cho quá trình build
+      - RUNNER_WORKDIR=/tmp/runner/work
+      # Tự động cập nhật runner client
+      - DISABLE_AUTO_UPDATE=true
+    volumes:
+      # 1. Mount Docker socket để runner có thể tương tác với Docker daemon trên host (DooD - Docker-outside-of-Docker)
+      - /var/run/docker.sock:/var/run/docker.sock
+      # 2. Mount thư mục làm việc tạm thời ra volume ngoài để lưu trữ cache và artifacts
+      - runner-work:/tmp/runner/work
+
+volumes:
+  runner-work:
+    name: quickbite-runner-work
