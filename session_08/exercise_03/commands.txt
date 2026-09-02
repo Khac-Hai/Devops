@@ -1,0 +1,51 @@
+================================================================================
+BÀI 3: THIẾT LẬP QUY TRÌNH BUILD VÀ PUSH IMAGE LÊN GHCR (GITHUB CONTAINER REGISTRY)
+Học viên: Khac-Hai
+Repository: https://github.com/Khac-Hai/Devops
+URL Package trên GitHub: https://github.com/Khac-Hai?tab=packages
+URL Chi tiết Image: https://github.com/users/Khac-Hai/packages/container/package/payment-service
+================================================================================
+
+1. TẠO PERSONAL ACCESS TOKEN (PAT) TRÊN GITHUB:
+- Truy cập: GitHub Settings -> Developer Settings -> Personal access tokens -> Tokens (classic)
+- Chọn "Generate new token (classic)"
+- Chọn các quyền (Scopes):
+  + write:packages (Tải package/image lên GHCR)
+  + read:packages (Tải package/image từ GHCR về)
+  + delete:packages (Xóa package khi cần)
+  + repo (Nếu repo là private)
+- Nhấn "Generate token" và lưu mã token (ví dụ: ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx)
+
+2. ĐĂNG NHẬP VÀO GITHUB CONTAINER REGISTRY (GHCR) TẠI TERMINAL:
+
+# Cách 1: Sử dụng biến môi trường (Khuyến nghị bảo mật)
+$env:CR_PAT="YOUR_PERSONAL_ACCESS_TOKEN"
+$env:CR_PAT | docker login ghcr.io -u Khac-Hai --password-stdin
+
+# Cách 2: Đăng nhập tương tác trực tiếp
+docker login ghcr.io -u Khac-Hai
+# (Nhập token PAT khi terminal yêu cầu Password)
+
+3. BUILD VÀ GẮN TAG IMAGE CHUẨN GHCR NAMESPACE:
+
+# Di chuyển vào thư mục bài tập
+cd session_08/exercise_03
+
+# Build và gắn tag phiên bản 1.0.0
+docker build -t ghcr.io/khac-hai/payment-service:1.0.0 .
+
+# Gắn thêm tag latest (Tùy chọn)
+docker tag ghcr.io/khac-hai/payment-service:1.0.0 ghcr.io/khac-hai/payment-service:latest
+
+4. PUSH IMAGE LÊN GITHUB CONTAINER REGISTRY (GHCR):
+
+# Đẩy phiên bản 1.0.0 lên GHCR
+docker push ghcr.io/khac-hai/payment-service:1.0.0
+
+# Đẩy tag latest lên GHCR (Tùy chọn)
+docker push ghcr.io/khac-hai/payment-service:latest
+
+5. KIỂM TRA IMAGE ĐÃ PUSH THÀNH CÔNG:
+- Truy cập vào GitHub cá nhân: https://github.com/Khac-Hai?tab=packages
+- Package "payment-service" hiển thị với tag "1.0.0".
+================================================================================
