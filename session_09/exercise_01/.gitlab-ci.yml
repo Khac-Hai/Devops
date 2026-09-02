@@ -1,0 +1,28 @@
+# 1. Định nghĩa Docker Image chứa môi trường Java JDK 17 cho GitLab Runner
+image: eclipse-temurin:17-jdk-alpine
+
+# 2. Khai báo danh sách các Stage trong Pipeline (Cú pháp đúng của YAML sequence)
+stages:
+  - build_app
+
+# 3. Cấp quyền thực thi cho file gradlew trước khi tiến hành build
+before_script:
+  - chmod +x ./gradlew
+
+# 4. Job thực thi build ứng dụng Spring Boot bằng Gradle
+build_job:
+  stage: build_app
+  script:
+    - ./gradlew clean build -x test
+  # Lưu trữ file JAR đầu ra để phục vụ triển khai hoặc demo
+  artifacts:
+    name: "user-service-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - build/libs/*.jar
+    expire_in: 1 week
+  # Caching dependencies để tối ưu tốc độ build ở các lần chạy tiếp theo
+  cache:
+    key: "$CI_COMMIT_REF_SLUG-gradle"
+    paths:
+      - .gradle/wrapper/
+      - .gradle/caches/
