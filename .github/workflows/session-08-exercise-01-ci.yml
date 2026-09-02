@@ -1,0 +1,54 @@
+name: Session 08 Exercise 01 - Docker Socket DooD CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  docker-test-job:
+    name: Test Docker CLI & Build on Self-Hosted DooD Runner
+    runs-on: [self-hosted, quickbite-runner]
+
+    defaults:
+      run:
+        working-directory: session_08/exercise_01
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: 1. Check Docker Version & Client
+        run: |
+          echo "=== DOCKER VERSION ==="
+          docker --version
+
+      - name: 2. Verify Docker Daemon Connectivity (DooD)
+        run: |
+          echo "=== DOCKER INFO (Connecting to Host Daemon via /var/run/docker.sock) ==="
+          docker info
+
+      - name: 3. Build Docker Image inside CI Runner
+        run: |
+          echo "=== BUILDING DOCKER IMAGE ==="
+          docker build -t quickbite/exercise01-app:latest .
+
+      - name: 4. List Docker Images
+        run: |
+          echo "=== DOCKER IMAGES ==="
+          docker images quickbite/exercise01-app:latest
+
+      - name: 5. Run Built Container
+        run: |
+          echo "=== RUNNING APP CONTAINER ==="
+          docker run --rm quickbite/exercise01-app:latest
+
+      - name: 6. Cleanup Test Image
+        if: always()
+        run: |
+          echo "=== CLEANUP TEST IMAGE ==="
+          docker rmi quickbite/exercise01-app:latest || true

@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  quickbite-dood-runner:
+    image: myoung34/github-runner:latest
+    container_name: quickbite-dood-runner
+    restart: unless-stopped
+    environment:
+      # URL của GitHub Repository
+      - REPO_URL=${REPO_URL:-https://github.com/Khac-Hai/Devops}
+      # Token đăng ký lấy từ: Settings > Actions > Runners > New runner
+      - RUNNER_TOKEN=${RUNNER_TOKEN}
+      # Tên định danh cho Runner
+      - RUNNER_NAME=${RUNNER_NAME:-quickbite-dood-runner}
+      # Nhãn (Labels) dùng để định tuyến workflow trong GitHub Actions
+      - RUNNER_LABELS=${RUNNER_LABELS:-quickbite-runner,dood-runner,linux,x64}
+      # Thư mục làm việc tạm thời cho quá trình build trong container
+      - RUNNER_WORKDIR=/tmp/runner/work
+      # Tự động cập nhật runner client
+      - DISABLE_AUTO_UPDATE=true
+      # Tránh tự động dọn dẹp docker images nếu muốn giữ cache
+      - DOCKER_PRUNE=false
+    volumes:
+      # =========================================================================
+      # 1. MOUNT DOCKER SOCKET (DooD - Docker-outside-of-Docker)
+      # -------------------------------------------------------------------------
+      # Chia sẻ Unix socket /var/run/docker.sock từ host vào trong container Runner.
+      # Điều này cho phép Docker CLI bên trong container có thể trực tiếp giao tiếp
+      # và ra lệnh cho Docker Daemon đang chạy trên máy Host.
+      # =========================================================================
+      - /var/run/docker.sock:/var/run/docker.sock
+
+      # 2. Mount thư mục làm việc của Runner ra volume để lưu cache và workspace
+      - runner-work:/tmp/runner/work
+
+volumes:
+  runner-work:
+    name: quickbite-dood-runner-work
